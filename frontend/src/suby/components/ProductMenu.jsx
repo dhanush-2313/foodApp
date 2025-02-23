@@ -4,12 +4,17 @@ import { useParams } from "react-router-dom";
 import TopBar from "./TopBar";
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import './ProductMenu.css';
 
 const ProductMenu = () => {
   const [products, setProducts] = useState([]);
   const [area, setArea] = useState(null);
 
   const { firmId, firmName } = useParams();
+  const { addToCart, removeFromCart, cart } = useCart();
+  const { isLoggedIn } = useAuth();
 
   const productHandler = async () => {
     try {
@@ -71,6 +76,9 @@ const ProductMenu = () => {
         <h3>{firmName}</h3>
         <div id="map" style={{ width: '100%', height: '400px', backgroundColor: '#e0e0e0' }}></div>
         {products.map((item) => {
+          const cartItem = cart.find(cartItem => cartItem.id === item.id);
+          const quantity = cartItem ? cartItem.quantity : 0;
+
           return (
             <div className="productBox" key={item.id}>
               <div>
@@ -80,7 +88,11 @@ const ProductMenu = () => {
               </div>
               <div className="productGroup">
                 <img src={`${API_URL}/uploads/${item.image}`} alt={item.productName} />
-                <div className="addButton">ADD</div>
+                <div className="quantityControls">
+                  <button onClick={() => isLoggedIn ? removeFromCart(item.id) : alert('Please log in to modify the cart')}>-</button>
+                  <span>{quantity}</span>
+                  <button onClick={() => isLoggedIn ? addToCart(item) : alert('Please log in to modify the cart')}>+</button>
+                </div>
               </div>
             </div>
           );
